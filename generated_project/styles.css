@@ -1,0 +1,265 @@
+/*
+  styles.css – foundational styling and CSS custom properties
+  ----------------------------------------------------------
+  This file defines a colour palette using CSS custom properties, applies a
+  simple CSS reset, and sets base styles for the <body> element.
+*/
+
+/* ----------------------------------------------------------
+   Colour palette (CSS custom properties)
+   ---------------------------------------------------------- */
+:root {
+  /* Primary brand colour */
+  --primary: #2c3e50;   /* dark slate */
+  /* Secondary colour */
+  --secondary: #34495e; /* slightly lighter slate */
+  /* Accent colour – used for highlights, links, etc. */
+  --accent: #e67e22;    /* vivid orange */
+  /* Background colour */
+  --bg: #f5f5f5;        /* light grey */
+  /* Base text colour */
+  --text: #333333;      /* dark grey for readability */
+}
+
+/* ----------------------------------------------------------
+   CSS Reset – removes default margins/padding and sets box-sizing
+   ---------------------------------------------------------- */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ----------------------------------------------------------
+   Base body styling – uses the custom properties defined above
+   ---------------------------------------------------------- */
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ----------------------------------------------------------
+   Layout for the #app container – Flexbox centering & max‑width
+   ---------------------------------------------------------- */
+#app {
+  display: flex;
+  flex-direction: column;      /* stack children vertically */
+  align-items: center;         /* horizontal centering */
+  justify-content: flex-start;/* start at the top */
+  max-width: 1200px;           /* constrain width on large screens */
+  margin: 0 auto;              /* centre the container in the viewport */
+  padding: 2rem 4rem;          /* generous padding for desktop */
+}
+
+/* Optional inner wrapper – ensures full‑width content inside #app */
+#app > .container {
+  width: 100%;
+}
+
+/* ----------------------------------------------------------
+   Form row layout – inputs side‑by‑side on larger screens
+   ---------------------------------------------------------- */
+#app .form-row {
+  display: flex;
+  gap: 1rem;          /* space between fields */
+  width: 100%;
+}
+
+/* Make each direct child of .form‑row share the available space */
+#app .form-row > * {
+  flex: 1;
+}
+
+/* ----------------------------------------------------------
+   Responsive adjustments for mobile (≤600px)
+   ---------------------------------------------------------- */
+@media (max-width: 600px) {
+  /* Reduce outer padding so content fits smaller screens */
+  #app {
+    padding: 1rem;
+  }
+
+  /* Stack form fields vertically */
+  #app .form-row {
+    flex-direction: column;
+  }
+
+  /* Ensure stacked items take the full width */
+  #app .form-row > * {
+    width: 100%;
+  }
+
+  /* Slightly smaller base font size for better mobile readability */
+  body {
+    font-size: 0.9rem;
+  }
+}
+
+/* ----------------------------------------------------------
+   Task input fields & button – rounded corners, shadows, transitions
+   ---------------------------------------------------------- */
+#new-task-title,
+#new-task-desc {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--primary);
+  border-radius: 0.5rem;
+  background-color: var(--bg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+#new-task-title:focus,
+#new-task-desc:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 5px rgba(230, 126, 34, 0.4);
+  background-color: #fff; /* ensure readability when focused */
+}
+
+#add-task-btn {
+  padding: 0.6rem 1.2rem;
+  background-color: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+#add-task-btn:hover {
+  background-color: var(--secondary);
+}
+
+#add-task-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* ----------------------------------------------------------
+   Task List Item Design
+   ---------------------------------------------------------- */
+
+/* Container for each task */
+.task-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: #fff;
+  border-left: 4px solid var(--accent);
+  border-radius: 0.5rem;
+  /* subtle shadow for depth */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  /* animation on entry */
+  animation: fade-in 0.4s ease forwards;
+  transition: filter 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+/* Completed tasks – change the left border colour */
+.task-item.completed {
+  border-left-color: var(--primary);
+  /* keep the original gradient but dim it a bit */
+  background: linear-gradient(135deg, #7f8c8d 0%, #95a5a6 100%);
+}
+
+/* Hover effect – brighten the item */
+.task-item:hover {
+  filter: brightness(1.05);
+}
+
+/* Icons (edit / delete) – hidden by default, shown on hover */
+.task-item .icon {
+  opacity: 0;
+  transform: translateX(5px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+  margin-left: 0.5rem;
+  /* use the accent colour for the icons */
+  color: var(--accent);
+}
+
+.task-item:hover .icon {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ----------------------------------------------------------
+   Filter Buttons – styling for .filters container and its buttons
+   ---------------------------------------------------------- */
+.filters {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+}
+
+.filters button {
+  background-color: var(--secondary);
+  color: #fff;
+  border: none;
+  border-radius: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.filters button:hover {
+  transform: scale(1.05);
+  background-color: var(--primary);
+}
+
+.filters button.active {
+  background-color: var(--accent);
+  color: #fff;
+}
+
+/* ----------------------------------------------------------
+   Task Count Badge – styling for #task-count
+   ---------------------------------------------------------- */
+#task-count {
+  font-weight: bold;
+  color: var(--accent);
+  background-color: rgba(230, 126, 34, 0.1);
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.3rem;
+  margin-left: 0.5rem;
+}
+
+/* ----------------------------------------------------------
+   Animations
+   ---------------------------------------------------------- */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Use this class when a task is being removed */
+.task-item.removing {
+  animation: slide-out 0.3s ease forwards;
+}
+
+@keyframes slide-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
