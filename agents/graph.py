@@ -4,6 +4,7 @@ from langchain_groq.chat_models import ChatGroq
 from langgraph.constants import END
 from langgraph.graph import StateGraph
 from langgraph.prebuilt import create_react_agent
+import sys
 
 from prompts import *
 from states import *
@@ -21,12 +22,28 @@ llm = ChatGroq(model="openai/gpt-oss-120b")
 
 
 # ------------------------
+# Utility wrapper for rate-limit handling
+# ------------------------
+def safe_invoke(func, *args, **kwargs):
+    """Invoke LLM or agent call with rate-limit handling."""
+    try:
+        return func(*args, **kwargs)
+    except Exception as e:
+        # Check if it's a rate-limit error (Groq might raise other types)
+        if "rate limit" in str(e).lower():
+            print("[ERROR] LLM rate limit exceeded. Stopping execution.")
+            sys.exit(1)
+        else:
+            raise e
+
+
+# ------------------------
 # Planner Agent
 # ------------------------
 def planner_agent(state: dict) -> dict:
     """Converts user prompt into a structured Plan."""
     user_prompt = state["user_prompt"]
-    resp = llm.with_structured_output(Plan).invoke(planner_prompt(user_prompt))
+    resp = safe_invoke(llm.with_structured_output(Plan).invoke, planner_prompt(user_prompt))
     if resp is None:
         raise ValueError("Planner did not return a valid response.")
     return {"plan": resp}
@@ -38,7 +55,8 @@ def planner_agent(state: dict) -> dict:
 def architect_agent(state: dict) -> dict:
     """Creates TaskPlan from Plan."""
     plan: Plan = state["plan"]
-    resp = llm.with_structured_output(TaskPlan).invoke(
+    resp = safe_invoke(
+        llm.with_structured_output(TaskPlan).invoke,
         architect_prompt(plan=plan.model_dump_json())
     )
     if resp is None:
@@ -53,7 +71,7 @@ def architect_agent(state: dict) -> dict:
 # Coder Agent
 # ------------------------
 def coder_agent(state: dict) -> dict:
-    """LangGraph tool-using coder agent with safe file writing."""
+    """LangGraph tool-using coder agent with safe file writing and rate-limit handling."""
     coder_state: CoderState = state.get("coder_state")
     if coder_state is None:
         coder_state = CoderState(task_plan=state["task_plan"], current_step_idx=0)
@@ -77,17 +95,16 @@ def coder_agent(state: dict) -> dict:
     coder_tools = [read_file, write_file, list_files, get_current_directory]
     react_agent = create_react_agent(llm, tools=coder_tools)
 
-    # Safe invocation with try-except
-    try:
-        resp = react_agent.invoke({
+    # Safe invocation with rate-limit handling
+    resp = safe_invoke(
+        react_agent.invoke,
+        {
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ]
-        })
-    except Exception as e:
-        print(f"[ERROR] Coder agent failed on step {coder_state.current_step_idx}: {e}")
-        return {"coder_state": coder_state, "status": "ERROR"}
+        }
+    )
 
     coder_state.current_step_idx += 1
     return {"coder_state": coder_state}
@@ -117,8 +134,11 @@ agent = graph.compile()
 # Main Execution
 # ------------------------
 if __name__ == "__main__":
-    result = agent.invoke(
-        {"user_prompt": "Build a colourful modern todo app in html css and js"},
-        {"recursion_limit": 100}
-    )
-    print("Final State:", result)
+    try:
+        result = agent.invoke(
+            {"user_prompt": "Build a colourful modern todo app in html css and js"},
+            {"recursion_limit": 100}
+        )
+        print("Final State:", result)
+    except SystemExit:
+        print("[INFO] Execution stopped due to LLM rate limit.")
