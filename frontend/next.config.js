@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
+    // Optimize for production build
     swcMinify: true,
+    // Optimize images
     images: {
         unoptimized: true,
     },
@@ -12,6 +14,14 @@ const nextConfig = {
             net: false,
             tls: false,
         };
+
+        // Optimize Monaco Editor
+        if (!isServer) {
+            config.resolve.alias = {
+                ...config.resolve.alias,
+                'monaco-editor': 'monaco-editor/esm/vs/editor/editor.api',
+            };
+        }
 
         return config;
     },
