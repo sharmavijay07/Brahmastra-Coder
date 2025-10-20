@@ -67,12 +67,14 @@ export default function CodeEditor({ content, fileName, theme = 'dark' }: CodeEd
                         options={{
                             readOnly: true,
                             minimap: { enabled: false },
-                            fontSize: 14,
+                            fontSize: window.innerWidth < 640 ? 12 : 14,
                             lineNumbers: 'on',
                             scrollBeyondLastLine: false,
                             automaticLayout: true,
                             tabSize: 2,
                             wordWrap: 'on',
+                            folding: window.innerWidth >= 768,
+                            glyphMargin: window.innerWidth >= 768,
                         }}
                     />
                 )}

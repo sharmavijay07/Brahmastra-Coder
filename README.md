@@ -1,7 +1,23 @@
-# 🎉 Brahmastra Coder - Complete Feature Summary
+# 🚀 Brahmastra Coder - AI Agentic Project Generator
+
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-0.6.3-green.svg)](https://langchain-ai.github.io/langgraph/)
+[![LangChain](https://img.shields.io/badge/LangChain-0.3.27-orange.svg)](https://python.langchain.com/)
+[![Groq](https://img.shields.io/badge/Groq-LLM-purple.svg)](https://groq.com/)
+[![Next.js](https://img.shields.io/badge/Next.js-14.2-black.svg)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-teal.svg)](https://fastapi.tiangolo.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## Project Overview
-**Brahmastra Coder** is a full-stack AI-powered project generator with real-time visualization. Users can describe projects in natural language and watch as AI creates complete, working applications with live file operations display and instant preview capabilities.
+**Brahmastra Coder** is an advanced **Agentic AI** full-stack application that generates complete projects from natural language descriptions. Built with **LangGraph** multi-agent orchestration and powered by **Groq LLM**, it features real-time visualization of AI code generation with live preview capabilities.
+
+### 🤖 Agentic AI Architecture
+This project leverages cutting-edge AI agent technology:
+- **LangGraph**: Multi-agent workflow orchestration and state management
+- **LangChain**: Agent framework and tool integration
+- **Groq**: Ultra-fast LLM inference (openai/gpt-oss-120b model)
+- **Three-Agent Pipeline**: Planner → Architect → Coder workflow
+- **ReAct Agent Pattern**: Tool-using agent with reasoning capabilities
 
 ---
 
@@ -9,8 +25,12 @@
 
 ### 1. **AI Project Generation**
 - **Natural Language Input**: Describe any project idea in plain English
-- **Three-Agent System**: Planner → Architect → Coder pipeline
-- **LangGraph Orchestration**: Reliable agent workflow management
+- **Three-Agent System**: 
+  - **Planner Agent**: Converts user prompt into structured plan
+  - **Architect Agent**: Creates detailed task breakdown and file structure
+  - **Coder Agent**: Implements each task with file operations
+- **LangGraph Orchestration**: Reliable multi-agent workflow with conditional edges
+- **Groq LLM**: Lightning-fast inference with advanced reasoning
 - **Multiple File Types**: HTML, CSS, JavaScript, Python, and more
 - **Smart File Organization**: Proper folder structure and file placement
 
@@ -60,19 +80,22 @@
 
 ## 🏗️ Architecture
 
-### Backend (Python)
+### Backend (Python + LangGraph)
 ```
-FastAPI + Socket.IO
+FastAPI + Socket.IO + LangGraph
 ├── api/server.py           # Main API server
 │   ├── Socket.IO Events    # Real-time communication
 │   ├── REST Endpoints      # File operations
 │   └── Static File Serving # Asset delivery
 │
 ├── agents/
-│   ├── graph.py            # LangGraph agent orchestration
-│   ├── prompts.py          # Agent prompt templates
+│   ├── graph.py            # LangGraph multi-agent workflow
+│   │   ├── Planner Agent   # Structured planning with Pydantic
+│   │   ├── Architect Agent # Task decomposition
+│   │   └── Coder Agent     # ReAct agent with tools
+│   ├── prompts.py          # Agent system prompts
 │   ├── states.py           # Pydantic data models
-│   └── tools.py            # File operation tools
+│   └── tools.py            # LangChain tools (read/write files)
 │
 └── generated_project/      # Output directory
 ```
@@ -99,6 +122,56 @@ Next.js 14 App Router
 │
 └── hooks/
     └── useProjectGeneration.ts   # WebSocket client hook
+```
+
+---
+
+## 💻 Technology Stack
+
+### 🤖 AI & Agent Framework
+| Technology | Purpose | Version |
+|-----------|---------|---------|
+| **LangGraph** | Multi-agent orchestration & state management | 0.6.3+ |
+| **LangChain** | Agent framework & tool integration | 0.3.27+ |
+| **Groq** | Ultra-fast LLM inference | 0.31.0+ |
+| **LLM Model** | `openai/gpt-oss-120b` | Latest |
+
+### 🔧 Backend Stack
+| Technology | Purpose | Version |
+|-----------|---------|---------|
+| **FastAPI** | REST API framework | 0.115.0 |
+| **Socket.IO** | WebSocket real-time communication | 5.11.0 |
+| **Uvicorn** | ASGI server | 0.32.0 |
+| **Pydantic** | Data validation & serialization | 2.11.7+ |
+| **Python** | Runtime | 3.11+ |
+
+### 🎨 Frontend Stack
+| Technology | Purpose | Version |
+|-----------|---------|---------|
+| **Next.js** | React framework | 14.2.18 |
+| **React** | UI library | 18.3.1 |
+| **TypeScript** | Type safety | 5.6.2 |
+| **Tailwind CSS** | Styling | 3.4.1 |
+| **Monaco Editor** | Code editor (VS Code engine) | 4.6.0 |
+| **Socket.IO Client** | WebSocket client | 4.8.1 |
+| **Lucide React** | Icon library | 0.454.0 |
+
+### 🔄 Agent Workflow
+```mermaid
+graph LR
+    A[User Prompt] --> B[Planner Agent]
+    B --> C[Structured Plan]
+    C --> D[Architect Agent]
+    D --> E[Task Plan]
+    E --> F[Coder Agent]
+    F --> G{More Tasks?}
+    G -->|Yes| F
+    G -->|No| H[Complete]
+    
+    F -.->|write_file| I[File System]
+    F -.->|read_file| I
+    I -.->|Callback| J[Socket.IO]
+    J -.->|Real-time| K[Frontend]
 ```
 
 ---

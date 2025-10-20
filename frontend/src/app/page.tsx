@@ -9,6 +9,7 @@ import ActivityLog from '@/components/ActivityLog'
 import StatusBar from '@/components/StatusBar'
 import ViewModeSwitcher from '@/components/ViewModeSwitcher'
 import CompletionNotification from '@/components/CompletionNotification'
+import PreviewButton from '@/components/PreviewButton'
 import { useProjectGeneration } from '@/hooks/useProjectGeneration'
 
 // Get API URL from environment variables
@@ -18,6 +19,8 @@ export default function Home() {
     const [selectedFile, setSelectedFile] = useState<string | null>(null)
     const [viewMode, setViewMode] = useState<'code' | 'preview'>('code')
     const [theme, setTheme] = useState<'light' | 'dark'>('dark')
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+    const [activeMobilePanel, setActiveMobilePanel] = useState<'prompt' | 'files' | 'editor'>('prompt')
 
     const {
         files,
@@ -94,12 +97,15 @@ export default function Home() {
             />
 
             {/* Header */}
-            <header className={`${theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'} border-b px-6 py-4`}>
+            <header className={`${theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'} border-b px-4 md:px-6 py-3 md:py-4`}>
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                    <h1 className="text-lg md:text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
                         Brahmastra Coder
                     </h1>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 md:gap-4">
+                        {/* Preview and Open Folder Buttons */}
+                        <PreviewButton status={status} files={files} />
+                        
                         <ViewModeSwitcher
                             viewMode={viewMode}
                             onViewModeChange={setViewMode}
@@ -107,9 +113,10 @@ export default function Home() {
                             onThemeChange={setTheme}
                             hasHtmlFile={hasHtmlFile}
                         />
-                        <div className="flex items-center gap-3">
+                        {/* Connection Status */}
+                        <div className="flex items-center gap-2">
                             <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-                            <span className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                            <span className={`text-xs md:text-sm hidden sm:inline ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
                                 {isConnected ? 'Connected' : 'Disconnected'}
                             </span>
                         </div>
@@ -117,10 +124,61 @@ export default function Home() {
                 </div>
             </header>
 
+            {/* Mobile Panel Selector */}
+            <div className={`md:hidden flex border-b ${theme === 'light' ? 'border-gray-200 bg-white' : 'border-gray-800 bg-gray-900'}`}>
+                <button
+                    onClick={() => {
+                        setActiveMobilePanel('prompt')
+                        console.log('Switched to prompt panel')
+                    }}
+                    className={`flex-1 px-4 py-2.5 text-sm font-medium transition-colors ${
+                        activeMobilePanel === 'prompt'
+                            ? theme === 'light' 
+                                ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50'
+                                : 'border-b-2 border-blue-500 text-blue-400 bg-blue-950'
+                            : theme === 'light' ? 'text-gray-600 hover:bg-gray-50' : 'text-gray-400 hover:bg-gray-800'
+                    }`}
+                >
+                    Prompt
+                </button>
+                <button
+                    onClick={() => {
+                        setActiveMobilePanel('files')
+                        console.log('Switched to files panel')
+                    }}
+                    className={`flex-1 px-4 py-2.5 text-sm font-medium transition-colors ${
+                        activeMobilePanel === 'files'
+                            ? theme === 'light' 
+                                ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50'
+                                : 'border-b-2 border-blue-500 text-blue-400 bg-blue-950'
+                            : theme === 'light' ? 'text-gray-600 hover:bg-gray-50' : 'text-gray-400 hover:bg-gray-800'
+                    }`}
+                >
+                    Files ({files.length})
+                </button>
+                <button
+                    onClick={() => {
+                        setActiveMobilePanel('editor')
+                        console.log('Switched to editor panel')
+                    }}
+                    className={`flex-1 px-4 py-2.5 text-sm font-medium transition-colors ${
+                        activeMobilePanel === 'editor'
+                            ? theme === 'light' 
+                                ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50'
+                                : 'border-b-2 border-blue-500 text-blue-400 bg-blue-950'
+                            : theme === 'light' ? 'text-gray-600 hover:bg-gray-50' : 'text-gray-400 hover:bg-gray-800'
+                    }`}
+                >
+                    {viewMode === 'preview' ? 'Preview' : 'Code'}
+                </button>
+            </div>
+
             {/* Main Content */}
             <div className="flex-1 flex overflow-hidden">
                 {/* Left Panel - Prompt Input and Activity Log */}
-                <div className={`w-96 flex flex-col border-r ${theme === 'light' ? 'border-gray-200 bg-white' : 'border-gray-800 bg-gray-900'}`}>
+                <div className={`${
+                    activeMobilePanel === 'prompt' ? 'flex' : 'hidden'
+                } md:flex w-full md:w-96 flex-col border-r ${theme === 'light' ? 'border-gray-200 bg-white' : 'border-gray-800 bg-gray-900'}`}>
                     <div className={`p-4 border-b ${theme === 'light' ? 'border-gray-200' : 'border-gray-800'}`}>
                         <PromptInput
                             onGenerate={generateProject}
@@ -134,7 +192,9 @@ export default function Home() {
                 </div>
 
                 {/* Middle Panel - File Explorer */}
-                <div className={`w-64 border-r ${theme === 'light' ? 'border-gray-200 bg-white' : 'border-gray-800 bg-gray-900'}`}>
+                <div className={`${
+                    activeMobilePanel === 'files' ? 'flex' : 'hidden'
+                } md:flex w-full md:w-64 border-r ${theme === 'light' ? 'border-gray-200 bg-white' : 'border-gray-800 bg-gray-900'}`}>
                     <FileExplorer
                         files={files}
                         onFileSelect={handleFileSelect}
@@ -144,7 +204,9 @@ export default function Home() {
                 </div>
 
                 {/* Right Panel - Code Editor or Preview */}
-                <div className={`flex-1 flex flex-col ${theme === 'light' ? 'bg-gray-50' : 'bg-gray-950'}`}>
+                <div className={`${
+                    activeMobilePanel === 'editor' ? 'flex' : 'hidden'
+                } md:flex flex-1 flex-col ${theme === 'light' ? 'bg-gray-50' : 'bg-gray-950'}`}>
                     {viewMode === 'code' ? (
                         <CodeEditor
                             content={fileContent}

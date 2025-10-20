@@ -15,35 +15,36 @@ export default function ViewModeSwitcher({
     onThemeChange,
     hasHtmlFile
 }: ViewModeSwitcherProps) {
-    if (!hasHtmlFile) return null
-
     return (
-        <div className={`flex items-center gap-2 rounded-lg p-1 ${theme === 'light' ? 'bg-gray-200' : 'bg-gray-800'}`}>
-            {/* View Mode Toggle */}
+        <div className={`flex items-center gap-1 sm:gap-2 rounded-lg p-1 ${theme === 'light' ? 'bg-gray-200' : 'bg-gray-800'}`}>
+            {/* View Mode Toggle - Always visible */}
             <div className={`flex rounded ${theme === 'light' ? 'bg-gray-100' : 'bg-gray-900'}`}>
                 <button
                     onClick={() => onViewModeChange('code')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium transition-colors ${viewMode === 'code'
+                    disabled={!hasHtmlFile && viewMode === 'preview'}
+                    className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded text-xs sm:text-sm font-medium transition-colors ${viewMode === 'code'
                             ? 'bg-blue-600 text-white'
                             : theme === 'light'
                                 ? 'text-gray-600 hover:text-gray-900'
                                 : 'text-gray-400 hover:text-gray-200'
                         }`}
                 >
-                    <Code size={16} />
-                    Code
+                    <Code size={14} className="sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Code</span>
                 </button>
                 <button
                     onClick={() => onViewModeChange('preview')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium transition-colors ${viewMode === 'preview'
+                    disabled={!hasHtmlFile}
+                    className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded text-xs sm:text-sm font-medium transition-colors ${viewMode === 'preview'
                             ? 'bg-blue-600 text-white'
                             : theme === 'light'
                                 ? 'text-gray-600 hover:text-gray-900'
                                 : 'text-gray-400 hover:text-gray-200'
-                        }`}
+                        } ${!hasHtmlFile ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    title={!hasHtmlFile ? 'Generate a project with HTML to enable preview' : ''}
                 >
-                    <Eye size={16} />
-                    Preview
+                    <Eye size={14} className="sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Preview</span>
                 </button>
             </div>
 
@@ -56,7 +57,7 @@ export default function ViewModeSwitcher({
                     }`}
                 title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
             >
-                {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+                {theme === 'light' ? <Moon size={16} className="sm:w-[18px] sm:h-[18px]" /> : <Sun size={16} className="sm:w-[18px] sm:h-[18px]" />}
             </button>
         </div>
     )
