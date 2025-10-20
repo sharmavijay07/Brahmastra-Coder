@@ -29,6 +29,7 @@ export function useProjectGeneration() {
     const [isConnected, setIsConnected] = useState(false)
 
     const socketRef = useRef<Socket | null>(null)
+    const stoppingRef = useRef(false)
 
     useEffect(() => {
         // Load initial files
@@ -147,6 +148,19 @@ export function useProjectGeneration() {
         })
     }, [addLog])
 
+    const stopGeneration = useCallback(() => {
+        const socket = socketRef.current
+        if (!socket) return
+        trying:
+        try {
+            stoppingRef.current = true
+            socket.emit('stop')
+            addLog({ type: 'log', message: 'Requested stop' })
+        } catch (e) {
+            console.error('Failed to send stop:', e)
+        }
+    }, [addLog])
+
     // Cleanup on unmount
     useEffect(() => {
         return () => {
@@ -164,6 +178,7 @@ export function useProjectGeneration() {
         error,
         isConnected,
         generateProject,
+        stopGeneration,
         fetchFileContent,
         fetchFiles,
     }

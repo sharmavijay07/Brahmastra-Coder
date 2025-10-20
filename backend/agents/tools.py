@@ -8,12 +8,27 @@ PROJECT_ROOT = pathlib.Path.cwd() / "generated_project"
 
 # Global callback for file operations (used by server for real-time updates)
 _file_operation_callback: Optional[Callable] = None
+_should_stop_callback: Optional[Callable[[], bool]] = None
 
 
 def set_file_operation_callback(callback: Optional[Callable]):
     """Set a callback function to be called when file operations occur."""
     global _file_operation_callback
     _file_operation_callback = callback
+
+
+def set_should_stop_callback(callback: Optional[Callable[[], bool]]):
+    """Set a callback that returns True when generation should stop."""
+    global _should_stop_callback
+    _should_stop_callback = callback
+
+
+def should_stop() -> bool:
+    """Check if a stop has been requested via the registered callback."""
+    try:
+        return bool(_should_stop_callback and _should_stop_callback())
+    except Exception:
+        return False
 
 
 def safe_path_for_project(path: str) -> pathlib.Path:

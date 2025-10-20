@@ -8,7 +8,7 @@ import sys
 
 from agents.prompts import *
 from agents.states import *
-from agents.tools import write_file, read_file, get_current_directory, list_files
+from agents.tools import write_file, read_file, get_current_directory, list_files, should_stop
 
 _ = load_dotenv()
 
@@ -24,6 +24,10 @@ llm = ChatGroq(model="openai/gpt-oss-120b")
 # ------------------------
 # Utility wrapper for rate-limit handling
 # ------------------------
+class RateLimitExceeded(Exception):
+    """Raised when the LLM provider indicates a rate limit error."""
+    pass
+
 def safe_invoke(func, *args, **kwargs):
     """Invoke LLM or agent call with rate-limit handling."""
     try:
@@ -31,8 +35,9 @@ def safe_invoke(func, *args, **kwargs):
     except Exception as e:
         # Check if it's a rate-limit error (Groq might raise other types)
         if "rate limit" in str(e).lower():
-            print("[ERROR] LLM rate limit exceeded. Stopping execution.")
-            sys.exit(1)
+            print("[ERROR] LLM rate limit exceeded.")
+            # Bubble up a clean exception so the server can handle and notify clients
+            raise RateLimitExceeded(str(e))
         else:
             raise e
 
@@ -79,6 +84,11 @@ def coder_agent(state: dict) -> dict:
     steps = coder_state.task_plan.implementation_steps
     if coder_state.current_step_idx >= len(steps):
         print(f"[INFO] All {len(steps)} tasks completed. Setting status to DONE.")
+        return {"coder_state": coder_state, "status": "DONE"}
+
+    # Respect stop requests
+    if should_stop():
+        print("[INFO] Stop requested. Halting coder agent.")
         return {"coder_state": coder_state, "status": "DONE"}
 
     current_task = steps[coder_state.current_step_idx]

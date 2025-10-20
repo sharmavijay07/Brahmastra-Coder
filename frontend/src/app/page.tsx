@@ -11,6 +11,7 @@ import ViewModeSwitcher from '@/components/ViewModeSwitcher'
 import CompletionNotification from '@/components/CompletionNotification'
 import PreviewButton from '@/components/PreviewButton'
 import { useProjectGeneration } from '@/hooks/useProjectGeneration'
+import { Square } from 'lucide-react'
 
 // Get API URL from environment variables
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -29,6 +30,7 @@ export default function Home() {
         status,
         error,
         generateProject,
+        stopGeneration,
         fetchFileContent,
         isConnected
     } = useProjectGeneration()
@@ -105,6 +107,17 @@ export default function Home() {
                     <div className="flex items-center gap-2 md:gap-4">
                         {/* Preview and Open Folder Buttons */}
                         <PreviewButton status={status} files={files} />
+
+                        {status === 'generating' && (
+                            <button
+                                onClick={stopGeneration}
+                                className="flex items-center gap-1.5 px-2 md:px-4 py-1.5 md:py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium text-xs md:text-sm"
+                                title="Stop generation"
+                            >
+                                <Square size={16} className="md:w-[18px] md:h-[18px]" />
+                                <span className="hidden sm:inline">Stop</span>
+                            </button>
+                        )}
 
                         <ViewModeSwitcher
                             viewMode={viewMode}

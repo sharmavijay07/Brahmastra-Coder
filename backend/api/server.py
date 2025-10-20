@@ -22,8 +22,8 @@ import os
 # Add parent directory to path to import agents
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from agents.graph import agent
-from agents.tools import PROJECT_ROOT, init_project_root, set_file_operation_callback
+from agents.graph import agent, RateLimitExceeded
+from agents.tools import PROJECT_ROOT, init_project_root, set_file_operation_callback, set_should_stop_callback
 
 # ----------------------------------------------------------------------------
 # Configure allowed origins (CORS) for both REST and Socket.IO
@@ -67,6 +67,12 @@ socket_app = socketio.ASGIApp(sio, app)
 class GenerateRequest(BaseModel):
     prompt: str
 
+# Global cooldown timestamp for rate limit handling (epoch seconds)
+_rate_limit_until: float | None = None
+
+# Stop control (per-process). For multi-user, this would be per-connection.
+_stop_requested: bool = False
+
 
 # Socket.IO event handlers
 @sio.event
@@ -83,6 +89,17 @@ async def connect(sid, environ):
 async def disconnect(sid):
     """Handle client disconnection"""
     print(f"Client {sid} disconnected")
+@sio.event
+async def stop(sid):
+    """Handle stop request from client to halt generation."""
+    global _stop_requested
+    _stop_requested = True
+    await sio.emit('message', {
+        'type': 'status',
+        'status': 'error',
+        'message': 'Generation stopped by user'
+    }, room=sid)
+
 
 
 @sio.event
@@ -97,6 +114,24 @@ async def generate(sid, data):
             }, room=sid)
             return
         
+        # --- Rate limit cooldown guard ---
+        # If we previously hit a provider rate limit, we store a cooldown until time.
+        # During the cooldown, we immediately notify the client and do not invoke the agent.
+        global _rate_limit_until
+        now = datetime.now().timestamp()
+        if '_rate_limit_until' in globals() and _rate_limit_until and now < _rate_limit_until:
+            remaining = int(_rate_limit_until - now)
+            await sio.emit('message', {
+                'type': 'status',
+                'status': 'error',
+                'message': f'Rate limit exceeded. Try again in ~{remaining}s.'
+            }, room=sid)
+            await sio.emit('message', {
+                'type': 'error',
+                'message': 'Rate limit exceeded. Please wait before trying again.'
+            }, room=sid)
+            return
+
         # Initialize project root
         project_path = init_project_root()
         
@@ -126,6 +161,11 @@ async def generate(sid, data):
         
         # Register the callback
         set_file_operation_callback(file_op_callback)
+
+        # Register stop callback that checks _stop_requested
+        def _check_stop() -> bool:
+            return _stop_requested
+        set_should_stop_callback(_check_stop)
         
         # Background task to monitor queue and emit events
         async def queue_monitor():
@@ -194,9 +234,50 @@ async def generate(sid, data):
                 
                 # Clear the callback
                 set_file_operation_callback(None)
+                set_should_stop_callback(None)
+                # Reset stop flag
+                global _stop_requested
+                _stop_requested = False
                 
                 return result
                 
+            except RateLimitExceeded as e:
+                # Parse backoff from error if possible, else default to 10 minutes
+                backoff_seconds = 600
+                msg = str(e)
+                # crude parse for "Please try again in Xs"
+                import re
+                m = re.search(r"try again in\s+([0-9]+)m?([0-9\.]+)?s?", msg, re.I)
+                if m:
+                    try:
+                        if m.group(2):
+                            backoff_seconds = int(float(m.group(1)) * 60 + float(m.group(2)))
+                        else:
+                            backoff_seconds = int(m.group(1))
+                    except Exception:
+                        pass
+
+                # Set global cooldown
+                global _rate_limit_until
+                _rate_limit_until = datetime.now().timestamp() + backoff_seconds
+
+                monitoring_active = False
+                try:
+                    await monitor_task
+                except:
+                    pass
+                set_file_operation_callback(None)
+                set_should_stop_callback(None)
+
+                await sio.emit('message', {
+                    'type': 'status',
+                    'status': 'error',
+                    'message': 'Rate limit exceeded. Please wait before trying again.'
+                }, room=sid)
+                await sio.emit('message', {
+                    'type': 'error',
+                    'message': 'Rate limit exceeded from LLM provider'
+                }, room=sid)
             except Exception as e:
                 error_msg = str(e)
                 print(f"Error in agent execution: {error_msg}")
@@ -212,6 +293,7 @@ async def generate(sid, data):
                 
                 # Clear the callback
                 set_file_operation_callback(None)
+                set_should_stop_callback(None)
                 
                 await sio.emit('message', {
                     'type': 'error',
@@ -258,6 +340,17 @@ async def health_check():
         "timestamp": datetime.now().isoformat(),
         "project_root": str(PROJECT_ROOT)
     }
+
+
+@app.get("/api/rate-limit")
+async def rate_limit_status():
+    """Return current rate-limit cooldown status and remaining seconds."""
+    now = datetime.now().timestamp()
+    if '_rate_limit_until' in globals() and _rate_limit_until:
+        remaining = max(0, int(_rate_limit_until - now))
+        active = remaining > 0
+        return {"active": active, "seconds_remaining": remaining}
+    return {"active": False, "seconds_remaining": 0}
 
 
 def build_file_tree(directory: Path, base_path: Path) -> list:
