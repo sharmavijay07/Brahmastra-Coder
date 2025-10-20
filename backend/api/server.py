@@ -25,12 +25,28 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from agents.graph import agent
 from agents.tools import PROJECT_ROOT, init_project_root, set_file_operation_callback
 
+# ----------------------------------------------------------------------------
+# Configure allowed origins (CORS) for both REST and Socket.IO
+# Read from env var ALLOWED_ORIGINS (comma-separated). If not provided, use sane defaults.
+# ----------------------------------------------------------------------------
+def _get_allowed_origins() -> list[str]:
+    env_val = os.getenv("ALLOWED_ORIGINS", "").strip()
+    if env_val:
+        return [o.strip() for o in env_val.split(",") if o.strip()]
+    # Defaults: localhost (dev) + common production frontend domain
+    return [
+        "http://localhost:3000",
+        "https://brahmastra-coder.vercel.app",
+    ]
+
+ALLOWED_ORIGINS = _get_allowed_origins()
+
 # Create Socket.IO server
 sio = socketio.AsyncServer(
     async_mode='asgi',
-    cors_allowed_origins=['http://localhost:3000'],
+    cors_allowed_origins=ALLOWED_ORIGINS,
     logger=True,
-    engineio_logger=False
+    engineio_logger=False,
 )
 
 app = FastAPI(title="Brahmastra Coder API")
@@ -38,7 +54,7 @@ app = FastAPI(title="Brahmastra Coder API")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Next.js default port
+    allow_origins=ALLOWED_ORIGINS,  # Frontend domains allowed
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
