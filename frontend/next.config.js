@@ -3,8 +3,6 @@ const nextConfig = {
     reactStrictMode: true,
     // Optimize for production build
     swcMinify: true,
-    // Reduce build output
-    output: 'standalone',
     // Optimize images
     images: {
         unoptimized: true,
@@ -26,16 +24,6 @@ const nextConfig = {
         }
 
         return config;
-    },
-    // Increase build timeout for Vercel
-    experimental: {
-        outputFileTracingExcludes: {
-            '*': [
-                'node_modules/@swc/core-linux-x64-gnu',
-                'node_modules/@swc/core-linux-x64-musl',
-                'node_modules/@esbuild/linux-x64',
-            ],
-        },
     },
 }
 

@@ -1,36 +1,17 @@
 {
-  "buildCommand": "next build",
-  "devCommand": "next dev",
-  "installCommand": "npm install",
-  "framework": "nextjs",
-  "regions": ["iad1"],
-  "build": {
-    "env": {
-      "NEXT_TELEMETRY_DISABLED": "1"
-    }
-  },
-  "functions": {
-    "pages/api/**/*.ts": {
-      "maxDuration": 30
-    }
-  },
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
+    "version": 2,
+    "builds": [
         {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
+            "src": "package.json",
+            "use": "@vercel/next"
         }
-      ]
+    ],
+    "env": {
+        "NEXT_TELEMETRY_DISABLED": "1"
+    },
+    "build": {
+        "env": {
+            "NEXT_TELEMETRY_DISABLED": "1"
+        }
     }
-  ]
 }
