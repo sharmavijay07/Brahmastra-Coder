@@ -13,4 +13,10 @@ dependencies = [
     "pip>=25.2",
     "pydantic>=2.11.7",
     "python-dotenv>=1.1.1",
+    # API Server dependencies
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "python-socketio>=5.11.0",
+    "python-multipart>=0.0.12",
+    "aiofiles>=23.2.1",
 ]

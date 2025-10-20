@@ -3,26 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Colourful Todo</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Hello Diwali</title>
+    <style>
+        /* Styles for the name container */
+        #nameContainer {
+            font-family: Arial, sans-serif;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-top: 50px;
+            color: #2e3a59;
+        }
+
+        /* Styles for the hello button */
+        #helloBtn {
+            display: block;
+            margin: 30px auto;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Hover state for the hello button */
+        #helloBtn:hover {
+            background-color: #e68900;
+        }
+    </style>
 </head>
 <body>
-    <div id="app">
-        <input id="new-task-title" placeholder="New task title" autocomplete="off"/>
-        <textarea id="new-task-desc" placeholder="Optional description"></textarea>
-        <button id="add-task-btn">Add</button>
-        <ul id="task-list" class="task-list"></ul>
-        <!-- Filter controls -->
-        <div class="filters">
-            <button id="filter-all">All</button>
-            <button id="filter-active">Active</button>
-            <button id="filter-completed">Completed</button>
-        </div>
-        <!-- Status bar -->
-        <div class="status-bar">
-            <span id="task-count"></span>
-        </div>
+    <div id="nameContainer">
+        <h1>Vijay Sharma</h1>
     </div>
-    <script type="module" src="app.js"></script>
+    <button id="helloBtn">Hello</button>
+    <script>
+        // Ensure the script runs after the DOM is fully loaded (placed at end of body)
+        const helloBtn = document.getElementById('helloBtn');
+        helloBtn.addEventListener('click', () => {
+            alert('happy diwali');
+        });
+    </script>
 </body>
 </html>
