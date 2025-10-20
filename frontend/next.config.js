@@ -6,6 +6,7 @@ const nextConfig = {
     images: {
         unoptimized: true,
     },
+    trailingSlash: true,
     webpack: (config, { isServer }) => {
         config.resolve.fallback = {
             ...config.resolve.fallback,
@@ -16,14 +17,8 @@ const nextConfig = {
 
         return config;
     },
-
-    // ✅ Ensures Next.js generates correct .vercel/output
-    output: 'standalone',
-    experimental: {
-        outputFileTracingIncludes: {
-            '*': ['./public/**/*'],
-        },
-    },
+    // Use static export to deploy as a purely static site on Vercel
+    output: 'export',
 };
 
 module.exports = nextConfig;

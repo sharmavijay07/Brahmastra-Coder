@@ -56,7 +56,7 @@ export default function CodeEditor({ content, fileName, theme = 'dark' }: CodeEd
                     </div>
                 ) : (
                     <pre className={`h-full w-full p-4 text-sm whitespace-pre-wrap break-words ${theme === 'light' ? 'text-gray-800' : 'text-gray-200'}`}>
-<code>{content}</code>
+                        <code>{content}</code>
                     </pre>
                 )}
             </div>

@@ -1,7 +1,8 @@
 /*
- * SimpleTodoApp – Responsive Styling
+ * SimpleTodoApp – Responsive Styling (Extended for Table Page)
  * -------------------------------------------------
- * This stylesheet defines the visual presentation for the Simple Todo App.
+ * This stylesheet defines the visual presentation for the Simple Todo App and
+ * additionally provides responsive styling for a generic HTML table page.
  * It uses CSS custom properties (variables) for colors and spacing, provides a
  * clean layout using Flexbox, and includes a media query for small screens.
  */
@@ -28,6 +29,15 @@
 }
 
 /* -------------------------------------------------
+ * Global box-sizing rule – ensures padding & border are included in element's total width/height
+ * ------------------------------------------------- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box; /* cross‑browser compatible */
+}
+
+/* -------------------------------------------------
  * Global page styling
  * ------------------------------------------------- */
 html, body {
@@ -37,10 +47,111 @@ html, body {
     background-color: var(--bg-color);
     color: var(--text-color);
     height: 100%;
+    /* Flex centering is retained for the Todo app layout */
     display: flex;
     align-items: center;
     justify-content: center;
 }
+
+/* -------------------------------------------------
+ * Header styling – visual hierarchy for the table page
+ * ------------------------------------------------- */
+header {
+    width: 100%;
+    padding: var(--spacing-lg) 0;
+    background-color: var(--primary-color);
+    color: #fff;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+/* -------------------------------------------------
+ * Table container – centers content and enables horizontal scrolling on small screens
+ * ------------------------------------------------- */
+#table-section {
+    max-width: 1000px;
+    width: 90%;
+    margin: var(--spacing-xl) auto; /* vertical spacing + auto horizontal centering */
+    overflow-x: auto; /* allows horizontal scroll when viewport is narrow */
+    padding: var(--spacing-md);
+    background-color: var(--app-bg-color);
+    border-radius: var(--spacing-sm);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* -------------------------------------------------
+ * Data table styling – full‑width, collapsed borders, subtle shadow
+ * ------------------------------------------------- */
+#data-table {
+    width: 100%;
+    border-collapse: collapse; /* removes default spacing between cells */
+    -webkit-box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Safari/old Chrome */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background-color: #fff;
+}
+
+/* -------------------------------------------------
+ * Table header – sortable column hint (cursor pointer)
+ * ------------------------------------------------- */
+#data-table thead th {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: var(--spacing-sm) var(--spacing-md);
+    text-align: left;
+    cursor: pointer; /* indicates column can be sorted */
+    -webkit-user-select: none; /* prevent text selection on click */
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* -------------------------------------------------
+ * Table body rows – alternating background colors and hover effect
+ * ------------------------------------------------- */
+#data-table tbody tr {
+    background-color: #fff;
+}
+
+#data-table tbody tr:nth-child(even) {
+    background-color: var(--bg-color);
+}
+
+#data-table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+#data-table tbody td {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+}
+
+/* -------------------------------------------------
+ * Responsive adjustments – screens narrower than 600px
+ * ------------------------------------------------- */
+@media (max-width: 600px) {
+    header h1 {
+        font-size: 1.5rem;
+    }
+
+    #table-section {
+        padding: var(--spacing-sm);
+    }
+
+    #data-table thead th,
+    #data-table tbody td {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 0.9rem;
+    }
+}
+
+/* -------------------------------------------------
+ * Existing Todo App styles (unchanged – retained for compatibility)
+ * ------------------------------------------------- */
 
 /* -------------------------------------------------
  * App container styling
@@ -167,7 +278,7 @@ html, body {
 }
 
 /* -------------------------------------------------
- * Responsive adjustments – <600px
+ * Responsive adjustments – <600px (Todo app specific)
  * ------------------------------------------------- */
 @media (max-width: 600px) {
     #app > div {

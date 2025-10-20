@@ -29,20 +29,26 @@ cd frontend
 npm install
 ```
 
-## Running the Application
+# Running the Application
 
 1. **Start the Backend API** (in a separate terminal):
 ```bash
 cd ..
-python -m uvicorn api.server:app --reload
+python -m uvicorn api.server:socket_app --reload
 ```
 
-2. **Start the Frontend**:
+2. **Start the Frontend (dev)**:
 ```bash
 npm run dev
 ```
 
-3. Open [http://localhost:3000](http://localhost:3000) in your browser
+3. **Build static export (production)**:
+```bash
+npm run build
+npm run start # serves the exported out/ folder if configured, or deploy to Vercel
+```
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## Usage
 
