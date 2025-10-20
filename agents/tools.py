@@ -1,10 +1,19 @@
 import pathlib
 import subprocess
-from typing import Tuple
+from typing import Tuple, Callable, Optional
 
 from langchain_core.tools import tool
 
 PROJECT_ROOT = pathlib.Path.cwd() / "generated_project"
+
+# Global callback for file operations (used by server for real-time updates)
+_file_operation_callback: Optional[Callable] = None
+
+
+def set_file_operation_callback(callback: Optional[Callable]):
+    """Set a callback function to be called when file operations occur."""
+    global _file_operation_callback
+    _file_operation_callback = callback
 
 
 def safe_path_for_project(path: str) -> pathlib.Path:
@@ -18,9 +27,23 @@ def safe_path_for_project(path: str) -> pathlib.Path:
 def write_file(path: str, content: str) -> str:
     """Writes content to a file at the specified path within the project root."""
     p = safe_path_for_project(path)
+    
+    # Check if file exists (for update vs create)
+    file_existed = p.exists()
+    
     p.parent.mkdir(parents=True, exist_ok=True)
     with open(p, "w", encoding="utf-8") as f:
         f.write(content)
+    
+    # Notify callback about file operation
+    if _file_operation_callback:
+        try:
+            relative_path = str(p.relative_to(PROJECT_ROOT))
+            operation_type = 'file_update' if file_existed else 'file_create'
+            _file_operation_callback(operation_type, relative_path)
+        except Exception as e:
+            print(f"Error in file operation callback: {e}")
+    
     return f"WROTE:{p}"
 
 

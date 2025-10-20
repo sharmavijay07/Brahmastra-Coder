@@ -41,13 +41,12 @@ function FileTreeItem({ item, level, onFileSelect, selectedFile, theme = 'dark' 
         <div>
             <div
                 onClick={handleClick}
-                className={`flex items-center gap-2 px-2 py-1.5 cursor-pointer transition-colors ${
-                    isSelected 
-                        ? 'bg-blue-600 text-white' 
+                className={`flex items-center gap-2 px-2 py-1.5 cursor-pointer transition-colors ${isSelected
+                        ? 'bg-blue-600 text-white'
                         : theme === 'light'
-                        ? 'text-gray-700 hover:bg-gray-100'
-                        : 'text-gray-300 hover:bg-gray-800'
-                }`}
+                            ? 'text-gray-700 hover:bg-gray-100'
+                            : 'text-gray-300 hover:bg-gray-800'
+                    }`}
                 style={{ paddingLeft: `${level * 12 + 8}px` }}
             >
                 {item.type === 'directory' ? (
@@ -89,17 +88,15 @@ export default function FileExplorer({ files, onFileSelect, selectedFile, theme 
     return (
         <div className="h-full flex flex-col">
             <div className={`px-4 py-3 border-b ${theme === 'light' ? 'border-gray-200' : 'border-gray-800'}`}>
-                <h2 className={`text-sm font-semibold uppercase tracking-wide ${
-                    theme === 'light' ? 'text-gray-700' : 'text-gray-300'
-                }`}>
+                <h2 className={`text-sm font-semibold uppercase tracking-wide ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'
+                    }`}>
                     Files
                 </h2>
             </div>
             <div className="flex-1 overflow-y-auto">
                 {files.length === 0 ? (
-                    <div className={`px-4 py-8 text-center text-sm ${
-                        theme === 'light' ? 'text-gray-500' : 'text-gray-500'
-                    }`}>
+                    <div className={`px-4 py-8 text-center text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-500'
+                        }`}>
                         No files yet. Generate a project to see files here.
                     </div>
                 ) : (

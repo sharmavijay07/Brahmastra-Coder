@@ -29,7 +29,7 @@ function LogIcon({ type, theme = 'dark' }: { type: LogEntry['type'], theme?: 'li
         default: 'text-gray-400'
     }
     const colors = theme === 'light' ? lightColors : darkColors
-    
+
     switch (type) {
         case 'file_create':
             return <FilePlus size={16} className={colors.create} />
@@ -64,17 +64,15 @@ export default function ActivityLog({ logs, theme = 'dark' }: ActivityLogProps) 
     return (
         <div className="h-full flex flex-col">
             <div className={`px-4 py-3 border-b ${theme === 'light' ? 'border-gray-200' : 'border-gray-800'}`}>
-                <h2 className={`text-sm font-semibold uppercase tracking-wide ${
-                    theme === 'light' ? 'text-gray-700' : 'text-gray-300'
-                }`}>
+                <h2 className={`text-sm font-semibold uppercase tracking-wide ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'
+                    }`}>
                     Activity Log
                 </h2>
             </div>
             <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
                 {logs.length === 0 ? (
-                    <div className={`py-8 text-center text-sm ${
-                        theme === 'light' ? 'text-gray-500' : 'text-gray-500'
-                    }`}>
+                    <div className={`py-8 text-center text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-500'
+                        }`}>
                         Activity will appear here when you generate a project
                     </div>
                 ) : (
@@ -84,21 +82,20 @@ export default function ActivityLog({ logs, theme = 'dark' }: ActivityLogProps) 
                                 <LogIcon type={log.type} theme={theme} />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className={`break-words ${
-                                    theme === 'light' ? (
+                                <p className={`break-words ${theme === 'light' ? (
                                         log.type === 'error' ? 'text-red-600' :
-                                        log.type === 'file_create' ? 'text-green-600' :
-                                        log.type === 'file_update' ? 'text-blue-600' :
-                                        log.type === 'file_delete' ? 'text-red-600' :
-                                        'text-gray-700'
+                                            log.type === 'file_create' ? 'text-green-600' :
+                                                log.type === 'file_update' ? 'text-blue-600' :
+                                                    log.type === 'file_delete' ? 'text-red-600' :
+                                                        'text-gray-700'
                                     ) : (
                                         log.type === 'error' ? 'text-red-400' :
-                                        log.type === 'file_create' ? 'text-green-400' :
-                                        log.type === 'file_update' ? 'text-blue-400' :
-                                        log.type === 'file_delete' ? 'text-red-400' :
-                                        'text-gray-300'
+                                            log.type === 'file_create' ? 'text-green-400' :
+                                                log.type === 'file_update' ? 'text-blue-400' :
+                                                    log.type === 'file_delete' ? 'text-red-400' :
+                                                        'text-gray-300'
                                     )
-                                }`}>
+                                    }`}>
                                     {log.message}
                                 </p>
                                 <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-500'}`}>

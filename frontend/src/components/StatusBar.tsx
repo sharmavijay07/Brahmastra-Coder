@@ -49,9 +49,8 @@ export default function StatusBar({ status, error, theme = 'dark' }: StatusBarPr
     }
 
     return (
-        <div className={`border-t px-6 py-2 ${
-            theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'
-        }`}>
+        <div className={`border-t px-6 py-2 ${theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'
+            }`}>
             <div className="flex items-center gap-2">
                 {getStatusIcon()}
                 <span className={`text-sm ${getStatusColor()}`}>

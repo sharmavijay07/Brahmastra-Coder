@@ -21,7 +21,7 @@ import os
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from agents.graph import agent
-from agents.tools import PROJECT_ROOT, init_project_root
+from agents.tools import PROJECT_ROOT, init_project_root, set_file_operation_callback
 
 # Create Socket.IO server
 sio = socketio.AsyncServer(
@@ -93,15 +93,25 @@ async def generate(sid, data):
             'message': f'📝 Prompt: {prompt}'
         }, room=sid)
         
-        # Get initial file list with timestamps
-        initial_files = {}
-        if Path(project_path).exists():
-            for f in Path(project_path).rglob("*"):
-                if f.is_file():
-                    try:
-                        initial_files[str(f.relative_to(project_path))] = f.stat().st_mtime
-                    except:
-                        pass
+        # Set up real-time file operation callback
+        def file_op_callback(operation_type: str, filepath: str):
+            """Callback for real-time file operations"""
+            try:
+                # This runs in a sync context, so we need to schedule the emit
+                action = 'Created' if operation_type == 'file_create' else 'Updated'
+                asyncio.create_task(sio.emit('message', {
+                    'type': operation_type,
+                    'message': f'{action}: {filepath}',
+                    'data': {
+                        'path': filepath,
+                        'type': 'file'
+                    }
+                }, room=sid))
+            except Exception as e:
+                print(f"Error in file operation callback: {e}")
+        
+        # Register the callback
+        set_file_operation_callback(file_op_callback)
         
         # Run agent in background task
         async def run_agent_with_monitoring():
@@ -112,54 +122,12 @@ async def generate(sid, data):
                     'message': '🤖 AI agent is working...'
                 }, room=sid)
                 
-                # Run agent synchronously (it's not async)
-                result = await asyncio.to_thread(agent.invoke, {"user_prompt": prompt})
-                
-                # Monitor for new/updated files
-                await asyncio.sleep(0.5)  # Give filesystem time to settle
-                
-                if Path(project_path).exists():
-                    current_files = {}
-                    for f in Path(project_path).rglob("*"):
-                        if f.is_file():
-                            try:
-                                rel_path = str(f.relative_to(project_path))
-                                current_files[rel_path] = f.stat().st_mtime
-                                
-                                # Check if file is new or updated
-                                if rel_path not in initial_files:
-                                    # New file
-                                    await sio.emit('message', {
-                                        'type': 'file_create',
-                                        'message': f'Created: {rel_path}',
-                                        'data': {
-                                            'path': rel_path,
-                                            'type': 'file'
-                                        }
-                                    }, room=sid)
-                                elif current_files[rel_path] > initial_files[rel_path]:
-                                    # Updated file
-                                    await sio.emit('message', {
-                                        'type': 'file_update',
-                                        'message': f'Updated: {rel_path}',
-                                        'data': {
-                                            'path': rel_path,
-                                            'type': 'file'
-                                        }
-                                    }, room=sid)
-                            except Exception as e:
-                                print(f"Error processing file {f}: {e}")
-                
-                # Check for deleted files
-                for old_file in initial_files:
-                    if old_file not in current_files:
-                        await sio.emit('message', {
-                            'type': 'file_delete',
-                            'message': f'Deleted: {old_file}',
-                            'data': {
-                                'path': old_file
-                            }
-                        }, room=sid)
+                # Run agent with increased recursion limit
+                result = await asyncio.to_thread(
+                    agent.invoke, 
+                    {"user_prompt": prompt},
+                    {"recursion_limit": 150}
+                )
                 
                 # Send completion message
                 await sio.emit('message', {
@@ -168,11 +136,18 @@ async def generate(sid, data):
                     'message': '✅ Project generated successfully!'
                 }, room=sid)
                 
+                # Clear the callback
+                set_file_operation_callback(None)
+                
                 return result
                 
             except Exception as e:
                 error_msg = str(e)
                 print(f"Error in agent execution: {error_msg}")
+                
+                # Clear the callback
+                set_file_operation_callback(None)
+                
                 await sio.emit('message', {
                     'type': 'error',
                     'message': f'Error: {error_msg}'

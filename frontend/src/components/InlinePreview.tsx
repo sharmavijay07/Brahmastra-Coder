@@ -99,13 +99,11 @@ export default function InlinePreview({ files, theme }: InlinePreviewProps) {
 
     if (htmlFiles.length === 0) {
         return (
-            <div className={`h-full flex items-center justify-center ${
-                theme === 'light' ? 'text-gray-600' : 'text-gray-500'
-            }`}>
+            <div className={`h-full flex items-center justify-center ${theme === 'light' ? 'text-gray-600' : 'text-gray-500'
+                }`}>
                 <div className="text-center">
-                    <AlertCircle size={48} className={`mx-auto mb-4 ${
-                        theme === 'light' ? 'text-gray-400' : 'text-gray-600'
-                    }`} />
+                    <AlertCircle size={48} className={`mx-auto mb-4 ${theme === 'light' ? 'text-gray-400' : 'text-gray-600'
+                        }`} />
                     <p className="text-lg mb-2">No HTML files to preview</p>
                     <p className="text-sm">Generate a project with HTML to use preview mode</p>
                 </div>
@@ -126,19 +124,17 @@ export default function InlinePreview({ files, theme }: InlinePreviewProps) {
 
     if (error) {
         return (
-            <div className={`h-full flex items-center justify-center ${
-                theme === 'light' ? 'text-red-600' : 'text-red-400'
-            }`}>
+            <div className={`h-full flex items-center justify-center ${theme === 'light' ? 'text-red-600' : 'text-red-400'
+                }`}>
                 <div className="text-center">
                     <AlertCircle size={48} className="mx-auto mb-4" />
                     <p className="text-lg mb-2">{error}</p>
                     <button
                         onClick={handleRefresh}
-                        className={`px-4 py-2 rounded-lg transition-colors ${
-                            theme === 'light'
+                        className={`px-4 py-2 rounded-lg transition-colors ${theme === 'light'
                                 ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
                                 : 'bg-gray-700 hover:bg-gray-600 text-white'
-                        }`}
+                            }`}
                     >
                         Try Again
                     </button>
@@ -150,21 +146,19 @@ export default function InlinePreview({ files, theme }: InlinePreviewProps) {
     return (
         <div className="h-full flex flex-col">
             {/* Preview Header */}
-            <div className={`flex items-center justify-between px-4 py-3 border-b ${
-                theme === 'light' 
-                    ? 'bg-white border-gray-200' 
+            <div className={`flex items-center justify-between px-4 py-3 border-b ${theme === 'light'
+                    ? 'bg-white border-gray-200'
                     : 'bg-gray-900 border-gray-800'
-            }`}>
+                }`}>
                 <div className="flex items-center gap-3">
                     {htmlFiles.length > 1 && (
                         <select
                             value={selectedHtmlFile || ''}
                             onChange={(e) => setSelectedHtmlFile(e.target.value)}
-                            className={`px-3 py-1.5 rounded border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                                theme === 'light'
+                            className={`px-3 py-1.5 rounded border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${theme === 'light'
                                     ? 'bg-gray-50 text-gray-900 border-gray-300'
                                     : 'bg-gray-800 text-gray-200 border-gray-700'
-                            }`}
+                                }`}
                             title="Select HTML file to preview"
                         >
                             {htmlFiles.map(file => (
@@ -174,9 +168,8 @@ export default function InlinePreview({ files, theme }: InlinePreviewProps) {
                             ))}
                         </select>
                     )}
-                    <span className={`text-sm ${
-                        theme === 'light' ? 'text-gray-600' : 'text-gray-400'
-                    }`}>
+                    <span className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'
+                        }`}>
                         {selectedHtmlFile}
                     </span>
                 </div>
@@ -184,11 +177,10 @@ export default function InlinePreview({ files, theme }: InlinePreviewProps) {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={handleRefresh}
-                        className={`p-2 rounded transition-colors ${
-                            theme === 'light'
+                        className={`p-2 rounded transition-colors ${theme === 'light'
                                 ? 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
                                 : 'hover:bg-gray-800 text-gray-400 hover:text-gray-200'
-                        }`}
+                            }`}
                         title="Refresh preview"
                     >
                         <RefreshCw size={18} />
@@ -198,11 +190,10 @@ export default function InlinePreview({ files, theme }: InlinePreviewProps) {
                         href={`${API_URL}/api/preview/${encodeURIComponent(selectedHtmlFile || '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`p-2 rounded transition-colors ${
-                            theme === 'light'
+                        className={`p-2 rounded transition-colors ${theme === 'light'
                                 ? 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
                                 : 'hover:bg-gray-800 text-gray-400 hover:text-gray-200'
-                        }`}
+                            }`}
                         title="Open in new tab"
                     >
                         <ExternalLink size={18} />

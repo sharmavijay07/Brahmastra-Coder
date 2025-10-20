@@ -78,35 +78,52 @@ def coder_agent(state: dict) -> dict:
 
     steps = coder_state.task_plan.implementation_steps
     if coder_state.current_step_idx >= len(steps):
+        print(f"[INFO] All {len(steps)} tasks completed. Setting status to DONE.")
         return {"coder_state": coder_state, "status": "DONE"}
 
     current_task = steps[coder_state.current_step_idx]
+    print(f"[INFO] Processing step {coder_state.current_step_idx + 1}/{len(steps)}: {current_task.task_description}")
+    
     existing_content = read_file.run(current_task.filepath) or ""
 
     system_prompt = coder_system_prompt()
     user_prompt = (
         f"Task: {current_task.task_description}\n"
         f"File: {current_task.filepath}\n"
-        f"Existing content:\n{existing_content}\n"
-        "Use write_file(path, content) to save your changes."
+        f"Existing content:\n{existing_content}\n\n"
+        "IMPORTANT: Use write_file(path, content) to save your changes. "
+        "Once you've written the file, your task is complete. Do not loop or retry."
     )
 
     # Register tools
     coder_tools = [read_file, write_file, list_files, get_current_directory]
+    
+    # Configure agent with recursion limit for individual tasks
     react_agent = create_react_agent(llm, tools=coder_tools)
 
-    # Safe invocation with rate-limit handling
-    resp = safe_invoke(
-        react_agent.invoke,
-        {
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ]
-        }
-    )
-
+    # Safe invocation with rate-limit handling and recursion limit
+    try:
+        resp = safe_invoke(
+            react_agent.invoke,
+            {
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ]
+            },
+            config={"recursion_limit": 15}  # Limit for individual task
+        )
+        print(f"[SUCCESS] Completed step {coder_state.current_step_idx + 1}")
+    except Exception as e:
+        print(f"[ERROR] Failed step {coder_state.current_step_idx + 1}: {e}")
+        # Continue to next step even if this one fails
+    
     coder_state.current_step_idx += 1
+    
+    # Check if we're done
+    if coder_state.current_step_idx >= len(steps):
+        return {"coder_state": coder_state, "status": "DONE"}
+    
     return {"coder_state": coder_state}
 
 
@@ -137,7 +154,7 @@ if __name__ == "__main__":
     try:
         result = agent.invoke(
             {"user_prompt": "Build a colourful modern todo app in html css and js"},
-            {"recursion_limit": 100}
+            {"recursion_limit": 150}  # Increased limit for the entire graph
         )
         print("Final State:", result)
     except SystemExit:

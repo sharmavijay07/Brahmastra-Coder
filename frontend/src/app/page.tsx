@@ -122,8 +122,8 @@ export default function Home() {
                 {/* Left Panel - Prompt Input and Activity Log */}
                 <div className={`w-96 flex flex-col border-r ${theme === 'light' ? 'border-gray-200 bg-white' : 'border-gray-800 bg-gray-900'}`}>
                     <div className={`p-4 border-b ${theme === 'light' ? 'border-gray-200' : 'border-gray-800'}`}>
-                        <PromptInput 
-                            onGenerate={generateProject} 
+                        <PromptInput
+                            onGenerate={generateProject}
                             disabled={status === 'generating'}
                             theme={theme}
                         />
