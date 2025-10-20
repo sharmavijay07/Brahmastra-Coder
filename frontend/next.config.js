@@ -1,14 +1,28 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
-    // Optimize for production build
+
+    // Optimize build and reduce upload size
     swcMinify: true,
-    // Optimize images
+    productionBrowserSourceMaps: false,
+
+    // Prevent image optimization issues on Vercel
     images: {
         unoptimized: true,
     },
+
+    // Transpile Monaco packages
     transpilePackages: ['monaco-editor', '@monaco-editor/react'],
+
+    // Improve Vercel serverless tracing
+    outputFileTracing: true,
+
     webpack: (config, { isServer }) => {
+        // Prevent Monaco from being bundled into serverless functions
+        if (isServer) {
+            config.externals.push('monaco-editor');
+        }
+
         config.resolve.fallback = {
             ...config.resolve.fallback,
             fs: false,
@@ -16,7 +30,7 @@ const nextConfig = {
             tls: false,
         };
 
-        // Optimize Monaco Editor
+        // Optimize Monaco Editor for client-side
         if (!isServer) {
             config.resolve.alias = {
                 ...config.resolve.alias,
@@ -26,6 +40,6 @@ const nextConfig = {
 
         return config;
     },
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;
