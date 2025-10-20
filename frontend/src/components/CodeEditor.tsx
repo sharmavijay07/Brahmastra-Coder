@@ -1,4 +1,15 @@
-import Editor from '@monaco-editor/react'
+import dynamic from 'next/dynamic'
+import { Loader2 } from 'lucide-react'
+
+// Dynamically import Monaco Editor to reduce initial bundle size
+const Editor = dynamic(() => import('@monaco-editor/react'), {
+    loading: () => (
+        <div className="h-full flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+        </div>
+    ),
+    ssr: false,
+})
 
 interface CodeEditorProps {
     content: string

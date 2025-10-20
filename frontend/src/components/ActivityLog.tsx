@@ -83,18 +83,18 @@ export default function ActivityLog({ logs, theme = 'dark' }: ActivityLogProps) 
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className={`break-words ${theme === 'light' ? (
-                                        log.type === 'error' ? 'text-red-600' :
-                                            log.type === 'file_create' ? 'text-green-600' :
-                                                log.type === 'file_update' ? 'text-blue-600' :
-                                                    log.type === 'file_delete' ? 'text-red-600' :
-                                                        'text-gray-700'
-                                    ) : (
-                                        log.type === 'error' ? 'text-red-400' :
-                                            log.type === 'file_create' ? 'text-green-400' :
-                                                log.type === 'file_update' ? 'text-blue-400' :
-                                                    log.type === 'file_delete' ? 'text-red-400' :
-                                                        'text-gray-300'
-                                    )
+                                    log.type === 'error' ? 'text-red-600' :
+                                        log.type === 'file_create' ? 'text-green-600' :
+                                            log.type === 'file_update' ? 'text-blue-600' :
+                                                log.type === 'file_delete' ? 'text-red-600' :
+                                                    'text-gray-700'
+                                ) : (
+                                    log.type === 'error' ? 'text-red-400' :
+                                        log.type === 'file_create' ? 'text-green-400' :
+                                            log.type === 'file_update' ? 'text-blue-400' :
+                                                log.type === 'file_delete' ? 'text-red-400' :
+                                                    'text-gray-300'
+                                )
                                     }`}>
                                     {log.message}
                                 </p>

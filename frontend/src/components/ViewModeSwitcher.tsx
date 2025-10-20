@@ -23,10 +23,10 @@ export default function ViewModeSwitcher({
                     onClick={() => onViewModeChange('code')}
                     disabled={!hasHtmlFile && viewMode === 'preview'}
                     className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded text-xs sm:text-sm font-medium transition-colors ${viewMode === 'code'
-                            ? 'bg-blue-600 text-white'
-                            : theme === 'light'
-                                ? 'text-gray-600 hover:text-gray-900'
-                                : 'text-gray-400 hover:text-gray-200'
+                        ? 'bg-blue-600 text-white'
+                        : theme === 'light'
+                            ? 'text-gray-600 hover:text-gray-900'
+                            : 'text-gray-400 hover:text-gray-200'
                         }`}
                 >
                     <Code size={14} className="sm:w-4 sm:h-4" />
@@ -36,10 +36,10 @@ export default function ViewModeSwitcher({
                     onClick={() => onViewModeChange('preview')}
                     disabled={!hasHtmlFile}
                     className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded text-xs sm:text-sm font-medium transition-colors ${viewMode === 'preview'
-                            ? 'bg-blue-600 text-white'
-                            : theme === 'light'
-                                ? 'text-gray-600 hover:text-gray-900'
-                                : 'text-gray-400 hover:text-gray-200'
+                        ? 'bg-blue-600 text-white'
+                        : theme === 'light'
+                            ? 'text-gray-600 hover:text-gray-900'
+                            : 'text-gray-400 hover:text-gray-200'
                         } ${!hasHtmlFile ? 'opacity-50 cursor-not-allowed' : ''}`}
                     title={!hasHtmlFile ? 'Generate a project with HTML to enable preview' : ''}
                 >
@@ -52,8 +52,8 @@ export default function ViewModeSwitcher({
             <button
                 onClick={() => onThemeChange(theme === 'light' ? 'dark' : 'light')}
                 className={`p-1.5 transition-colors ${theme === 'light'
-                        ? 'text-gray-600 hover:text-gray-900'
-                        : 'text-gray-400 hover:text-gray-200'
+                    ? 'text-gray-600 hover:text-gray-900'
+                    : 'text-gray-400 hover:text-gray-200'
                     }`}
                 title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
             >
