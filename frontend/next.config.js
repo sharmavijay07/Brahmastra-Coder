@@ -7,6 +7,7 @@ const nextConfig = {
     images: {
         unoptimized: true,
     },
+    transpilePackages: ['monaco-editor', '@monaco-editor/react'],
     webpack: (config, { isServer }) => {
         config.resolve.fallback = {
             ...config.resolve.fallback,

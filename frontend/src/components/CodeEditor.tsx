@@ -74,7 +74,7 @@ export default function CodeEditor({ content, fileName, theme = 'dark' }: CodeEd
                         height="100%"
                         language={language}
                         value={content}
-                        theme={theme === 'light' ? 'light' : 'vs-dark'}
+                        theme={theme === 'light' ? 'vs-light' : 'vs-dark'}
                         options={{
                             readOnly: true,
                             minimap: { enabled: false },
