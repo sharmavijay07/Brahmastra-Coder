@@ -1,16 +1,3 @@
-import dynamic from 'next/dynamic'
-import { Loader2 } from 'lucide-react'
-
-// Dynamically import Monaco Editor to reduce initial bundle size
-const Editor = dynamic(() => import('@monaco-editor/react'), {
-    loading: () => (
-        <div className="h-full flex items-center justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-        </div>
-    ),
-    ssr: false,
-})
-
 interface CodeEditorProps {
     content: string
     fileName?: string
@@ -47,8 +34,7 @@ function getLanguageFromFileName(fileName: string): string {
 }
 
 export default function CodeEditor({ content, fileName, theme = 'dark' }: CodeEditorProps) {
-    const language = fileName ? getLanguageFromFileName(fileName) : 'plaintext'
-
+    // Lightweight, dependency-free code viewer
     return (
         <div className="h-full flex flex-col">
             {fileName && (
@@ -60,34 +46,18 @@ export default function CodeEditor({ content, fileName, theme = 'dark' }: CodeEd
                     </h2>
                 </div>
             )}
-            <div className="flex-1">
+            <div className={`flex-1 overflow-auto ${theme === 'light' ? 'bg-white' : 'bg-gray-950'}`}>
                 {!fileName ? (
-                    <div className={`h-full flex items-center justify-center ${theme === 'light' ? 'text-gray-500' : 'text-gray-500'
-                        }`}>
+                    <div className={`h-full flex items-center justify-center ${theme === 'light' ? 'text-gray-500' : 'text-gray-500'}`}>
                         <div className="text-center">
                             <p className="text-lg mb-2">No file selected</p>
                             <p className="text-sm">Select a file from the explorer to view its contents</p>
                         </div>
                     </div>
                 ) : (
-                    <Editor
-                        height="100%"
-                        language={language}
-                        value={content}
-                        theme={theme === 'light' ? 'vs-light' : 'vs-dark'}
-                        options={{
-                            readOnly: true,
-                            minimap: { enabled: false },
-                            fontSize: window.innerWidth < 640 ? 12 : 14,
-                            lineNumbers: 'on',
-                            scrollBeyondLastLine: false,
-                            automaticLayout: true,
-                            tabSize: 2,
-                            wordWrap: 'on',
-                            folding: window.innerWidth >= 768,
-                            glyphMargin: window.innerWidth >= 768,
-                        }}
-                    />
+                    <pre className={`h-full w-full p-4 text-sm whitespace-pre-wrap break-words ${theme === 'light' ? 'text-gray-800' : 'text-gray-200'}`}>
+<code>{content}</code>
+                    </pre>
                 )}
             </div>
         </div>

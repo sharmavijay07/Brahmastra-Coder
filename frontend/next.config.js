@@ -6,16 +6,7 @@ const nextConfig = {
     images: {
         unoptimized: true,
     },
-    transpilePackages: ['@monaco-editor/react'],
-
     webpack: (config, { isServer }) => {
-        if (!isServer) {
-            config.resolve.alias = {
-                ...config.resolve.alias,
-                'monaco-editor': 'monaco-editor/esm/vs/editor/editor.api'
-            };
-        }
-
         config.resolve.fallback = {
             ...config.resolve.fallback,
             fs: false,
