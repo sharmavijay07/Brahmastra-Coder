@@ -35,14 +35,20 @@ def write_file(path: str, content: str) -> str:
     with open(p, "w", encoding="utf-8") as f:
         f.write(content)
     
+    relative_path = str(p.relative_to(PROJECT_ROOT))
+    operation_type = 'file_update' if file_existed else 'file_create'
+    
+    print(f"[WRITE_FILE] {operation_type}: {relative_path} (callback: {_file_operation_callback is not None})")
+    
     # Notify callback about file operation
     if _file_operation_callback:
         try:
-            relative_path = str(p.relative_to(PROJECT_ROOT))
-            operation_type = 'file_update' if file_existed else 'file_create'
             _file_operation_callback(operation_type, relative_path)
+            print(f"[CALLBACK] Successfully called callback for {relative_path}")
         except Exception as e:
-            print(f"Error in file operation callback: {e}")
+            print(f"[CALLBACK_ERROR] Error in file operation callback: {e}")
+    else:
+        print(f"[CALLBACK] No callback registered")
     
     return f"WROTE:{p}"
 

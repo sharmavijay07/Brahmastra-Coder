@@ -7,9 +7,11 @@ import json
 import sys
 import subprocess
 import platform
+import threading
 from pathlib import Path
 from typing import Dict, Any
 from datetime import datetime
+from queue import Queue
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
@@ -93,28 +95,57 @@ async def generate(sid, data):
             'message': f'📝 Prompt: {prompt}'
         }, room=sid)
         
+        # Create a thread-safe queue for file operations
+        file_op_queue = Queue()
+        monitoring_active = True
+        
         # Set up real-time file operation callback
         def file_op_callback(operation_type: str, filepath: str):
-            """Callback for real-time file operations"""
+            """Callback for real-time file operations (runs in agent thread)"""
             try:
-                # This runs in a sync context, so we need to schedule the emit
-                action = 'Created' if operation_type == 'file_create' else 'Updated'
-                asyncio.create_task(sio.emit('message', {
-                    'type': operation_type,
-                    'message': f'{action}: {filepath}',
-                    'data': {
-                        'path': filepath,
-                        'type': 'file'
-                    }
-                }, room=sid))
+                print(f"[FILE_OP] {operation_type}: {filepath}")
+                file_op_queue.put((operation_type, filepath))
             except Exception as e:
                 print(f"Error in file operation callback: {e}")
         
         # Register the callback
         set_file_operation_callback(file_op_callback)
         
+        # Background task to monitor queue and emit events
+        async def queue_monitor():
+            """Monitor the queue and emit Socket.IO events"""
+            while monitoring_active or not file_op_queue.empty():
+                try:
+                    # Non-blocking check for queue items
+                    if not file_op_queue.empty():
+                        operation_type, filepath = file_op_queue.get_nowait()
+                        action = 'Created' if operation_type == 'file_create' else 'Updated'
+                        
+                        print(f"[EMIT] {action}: {filepath}")
+                        
+                        await sio.emit('message', {
+                            'type': operation_type,
+                            'message': f'{action}: {filepath}',
+                            'data': {
+                                'path': filepath,
+                                'type': 'file'
+                            }
+                        }, room=sid)
+                        
+                        # Also refresh the file list
+                        await asyncio.sleep(0.1)
+                    else:
+                        await asyncio.sleep(0.1)
+                except Exception as e:
+                    print(f"Error in queue monitor: {e}")
+                    await asyncio.sleep(0.1)
+        
+        # Start queue monitor
+        monitor_task = asyncio.create_task(queue_monitor())
+        
         # Run agent in background task
         async def run_agent_with_monitoring():
+            nonlocal monitoring_active
             try:
                 # Execute the agent
                 await sio.emit('message', {
@@ -129,12 +160,21 @@ async def generate(sid, data):
                     {"recursion_limit": 150}
                 )
                 
+                # Wait a bit for any remaining queue items
+                await asyncio.sleep(0.5)
+                
                 # Send completion message
                 await sio.emit('message', {
                     'type': 'status',
                     'status': 'completed',
                     'message': '✅ Project generated successfully!'
                 }, room=sid)
+                
+                # Stop monitoring
+                monitoring_active = False
+                
+                # Wait for monitor to finish
+                await monitor_task
                 
                 # Clear the callback
                 set_file_operation_callback(None)
@@ -144,6 +184,15 @@ async def generate(sid, data):
             except Exception as e:
                 error_msg = str(e)
                 print(f"Error in agent execution: {error_msg}")
+                
+                # Stop monitoring
+                monitoring_active = False
+                
+                # Wait for monitor to finish
+                try:
+                    await monitor_task
+                except:
+                    pass
                 
                 # Clear the callback
                 set_file_operation_callback(None)

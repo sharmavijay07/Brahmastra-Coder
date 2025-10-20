@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Wisher</title>
+    <style>
+        :root {
+            --primary-color: #ff4081;
+            --secondary-color: #ffeb3b;
+        }
+        /* Container styling */
+        #birthday-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* full viewport height */
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+            /* Festive gradient */
+        }
+        /* Greeting styling */
+        #greeting {
+            font-size: 4rem;
+            font-weight: bold;
+            text-align: center;
+            color: var(--primary-color);
+            margin: 0;
+        }
+        /* Custom message styling */
+        #custom-message {
+            font-size: 2rem;
+            text-align: center;
+            color: var(--secondary-color);
+            margin-top: 1rem;
+        }
+        /* Canvas covering full viewport */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            #greeting {
+                font-size: 2.5rem;
+            }
+            #custom-message {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="birthday-container">
+        <h1 id="greeting">Happy Birthday!</h1>
+        <p id="custom-message">[Your personalized message here]</p>
+        <!-- New UI controls -->
+        <button id="music-toggle">Toggle Music</button>
+        <input id="message-input" type="text" placeholder="Enter your message"/>
+        <button id="update-message">Update Message</button>
+    </div>
+    <canvas id="confetti-canvas"></canvas>
+    <audio id="bg-music" src="path/to/music.mp3" loop style="display:none;"></audio>
+    <script>
+        // Confetti particle representation
+        class ConfettiParticle {
+            constructor(width, height) {
+                this.reset(width, height);
+            }
+            reset(width, height) {
+                // Start at a random x along the top
+                this.x = Math.random() * width;
+                this.y = Math.random() * -height; // start above view
+                this.size = Math.random() * 6 + 4; // 4-10px
+                this.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
+                const speed = Math.random() * 3 + 2; // 2-5
+                const angle = Math.PI / 2 + (Math.random() - 0.5) * 0.5; // mostly downwards
+                this.speedX = Math.cos(angle) * speed;
+                this.speedY = Math.sin(angle) * speed;
+            }
+            update(width, height) {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                // Slight rotation effect via sinusoidal drift
+                this.speedX += (Math.random() - 0.5) * 0.05;
+                this.speedY += 0.02; // gravity
+                if (this.y > height || this.x < -this.size || this.x > width + this.size) {
+                    this.reset(width, height);
+                    this.y = -this.size; // re-enter from top
+                }
+            }
+            draw(ctx) {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.size, this.size * 0.6);
+            }
+        }
+
+        // Engine to manage particles and animation loop
+        class ConfettiEngine {
+            constructor(canvasId = 'confetti-canvas', particleCount = 150) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.particleCount = particleCount;
+                this.particles = [];
+                this.resize();
+                this.initParticles();
+                window.addEventListener('resize', () => this.resize());
+                this.animationFrame = null;
+                this.running = false;
+            }
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+            initParticles() {
+                this.particles = [];
+                for (let i = 0; i < this.particleCount; i++) {
+                    this.particles.push(new ConfettiParticle(this.canvas.width, this.canvas.height));
+                }
+            }
+            update() {
+                const { width, height } = this.canvas;
+                for (const p of this.particles) {
+                    p.update(width, height);
+                }
+            }
+            draw() {
+                const { ctx, canvas } = this;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (const p of this.particles) {
+                    p.draw(ctx);
+                }
+            }
+            loop = () => {
+                if (!this.running) return;
+                this.update();
+                this.draw();
+                this.animationFrame = requestAnimationFrame(this.loop);
+            };
+            start() {
+                if (this.running) return;
+                this.running = true;
+                this.loop();
+            }
+            stop() {
+                this.running = false;
+                if (this.animationFrame) {
+                    cancelAnimationFrame(this.animationFrame);
+                    this.animationFrame = null;
+                }
+            }
+        }
+
+        // Exported function to start the confetti animation
+        function startConfetti() {
+            const engine = new ConfettiEngine();
+            engine.start();
+            // Return engine in case caller wants to stop later
+            return engine;
+        }
+
+        // Immediately start the animation when script loads
+        startConfetti();
+
+        // --- Music control logic ---
+        /**
+         * Toggles background music playback.
+         * @param {boolean} enabled - true to play, false to pause.
+         */
+        function toggleMusic(enabled) {
+            const musicEl = document.getElementById('bg-music');
+            if (!musicEl) return;
+            musicEl.volume = 0.5;
+            if (enabled) {
+                // play returns a promise; catch any errors (e.g., autoplay restrictions)
+                musicEl.play().catch(err => {
+                    console.error('Failed to play background music:', err);
+                });
+            } else {
+                musicEl.pause();
+            }
+        }
+
+        // Listen for custom "musicToggle" events to control playback
+        document.addEventListener('musicToggle', (e) => {
+            const enabled = e.detail && typeof e.detail.enabled === 'boolean' ? e.detail.enabled : false;
+            toggleMusic(enabled);
+        });
+
+        // Global helpers to dispatch the toggle event
+        function enableMusic() {
+            const evt = new CustomEvent('musicToggle', { detail: { enabled: true } });
+            document.dispatchEvent(evt);
+        }
+
+        function disableMusic() {
+            const evt = new CustomEvent('musicToggle', { detail: { enabled: false } });
+            document.dispatchEvent(evt);
+        }
+        // Expose globally (optional, functions are already in global scope)
+        window.enableMusic = enableMusic;
+        window.disableMusic = disableMusic;
+
+        // --- UI interaction logic ---
+        // Music toggle button
+        const musicToggleBtn = document.getElementById('music-toggle');
+        if (musicToggleBtn) {
+            musicToggleBtn.addEventListener('click', () => {
+                const musicEl = document.getElementById('bg-music');
+                if (musicEl && musicEl.paused) {
+                    enableMusic();
+                } else {
+                    disableMusic();
+                }
+            });
+        }
+
+        // Update custom message button
+        const updateMsgBtn = document.getElementById('update-message');
+        if (updateMsgBtn) {
+            updateMsgBtn.addEventListener('click', () => {
+                const input = document.getElementById('message-input');
+                const customMsg = document.getElementById('custom-message');
+                if (input && customMsg) {
+                    customMsg.innerText = input.value;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
